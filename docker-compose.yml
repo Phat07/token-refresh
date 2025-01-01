@@ -10,10 +10,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=mysql  # MySQL service name
-      - DB_PORT=3306
+      - DB_HOST=junction.proxy.rlwy.net  # MySQL service name
+      - DB_PORT=24066
       - DB_USERNAME=root
-      - DB_PASSWORD=admin
+      - DB_PASSWORD=pCLVMAewIJaSEAjdxXMQSpZBHWsqwqpA
       - DB_DATABASE_NAME=hairhub
     depends_on:
       - mysql  # Ensures the app starts after mysql container is up
@@ -25,7 +25,7 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: pCLVMAewIJaSEAjdxXMQSpZBHWsqwqpA
       MYSQL_DATABASE: hairhub
     ports:
       - "3307:3306"  # Host port 3307, container port 3306
