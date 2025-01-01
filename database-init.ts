@@ -1,29 +1,22 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 
-async function createDatabaseIfNotExists() {
-  // Cấu hình kết nối cơ sở dữ liệu
-  const host = 'localhost';
-  const user = 'root';
-  const password = 'admin';
-  const databaseName = 'hairhub';
-
-  // Kết nối đến cơ sở dữ liệu hệ thống
-  const pool = mysql.createPool({
-    host,
-    user,
-    password,
-  });
-
+async function connectToDatabase() {
   try {
-    // Tạo cơ sở dữ liệu nếu chưa tồn tại
-    await pool.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\`;`);
-    console.log(`Database "${databaseName}" created or already exists.`);
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE_NAME,
+      port: process.env.DB_PORT,
+    });
+
+    console.log('Connected to MySQL database!');
+    // Perform database operations here
+    await connection.end();
   } catch (error) {
-    console.error('Error creating database:', error);
-    process.exit(1);
-  } finally {
-    await pool.end();
+    console.error('Error connecting to MySQL:', error);
   }
 }
 
-createDatabaseIfNotExists();
+connectToDatabase();
