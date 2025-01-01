@@ -55,7 +55,7 @@ import { Admin } from './admin/entities/admin.entity';
           Owner,
           Admin,
         ],
-        synchronize: true,
+        synchronize: false,
         logging: true,
       }),
       inject: [ConfigService],
