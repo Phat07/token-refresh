@@ -63,10 +63,15 @@ import { Admin } from './admin/entities/admin.entity';
         ssl: {
           rejectUnauthorized: false, // Quan trọng cho kết nối SSL trên Railway
         },
-        keepConnectionAlive: true,
-        connectTimeout: 60000, // Tăng timeout lên 60 giây
-        retryAttempts: 5, // Số lần thử kết nối lại
-        retryDelay: 3000, // Đợi 3 giây giữa các lần thử
+        retryAttempts: 10,
+        retryDelay: 3000,
+        connectTimeout: 60000,
+        extra: {
+          connectionLimit: 10,
+          waitForConnections: true,
+          queueLimit: 0,
+          poolSize: 10
+        },
       }),
       inject: [ConfigService],
     }),
