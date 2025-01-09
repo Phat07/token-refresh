@@ -60,17 +60,27 @@ import { Admin } from './admin/entities/admin.entity';
         synchronize: false,
         logging: true,
         logger: 'advanced-console',
-        ssl: {
-          rejectUnauthorized: false, // Quan trọng cho kết nối SSL trên Railway
-        },
-        retryAttempts: 10,
+        ssl:
+          process.env.NODE_ENV === 'production'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : undefined,
+        // Optimized connection handling
+        retryAttempts: 3,
         retryDelay: 3000,
-        connectTimeout: 60000,
+        connectTimeout: 20000,
         extra: {
           connectionLimit: 10,
           waitForConnections: true,
           queueLimit: 0,
-          poolSize: 10
+        },
+        // Proper connection pool configuration for MySQL2
+        poolSize: undefined, // Remove deprecated option
+        pool: {
+          max: 10,
+          min: 2,
+          idle: 10000,
         },
       }),
       inject: [ConfigService],
