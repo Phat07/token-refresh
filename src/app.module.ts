@@ -59,6 +59,7 @@ import { Admin } from './admin/entities/admin.entity';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false,
         logging: true,
+        logger: 'advanced-console',
         ssl: {
           rejectUnauthorized: false, // Quan trọng cho kết nối SSL trên Railway
         },
