@@ -36,6 +36,7 @@ import { Admin } from './admin/entities/admin.entity';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
+        url: configService.get('DATABASE_URL'),
         host: configService.get('DB_HOST'),
         port: +configService.get('DB_PORT'),
         username: configService.get('DB_USERNAME'),
