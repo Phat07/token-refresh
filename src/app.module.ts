@@ -34,55 +34,44 @@ import { Admin } from './admin/entities/admin.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        url: configService.get('DATABASE_URL'),
-        host: configService.get('DB_HOST'),
-        port: +configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE_NAME'),
-        // entities: [
-        //   User,
-        //   Role,
-        //   Token,
-        //   Otp,
-        //   Salon,
-        //   Service,
-        //   Voucher,
-        //   Employee,
-        //   Wallet,
-        //   Customer,
-        //   Owner,
-        //   Admin,
-        // ],
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
-        logging: true,
-        logger: 'advanced-console',
-        ssl:
-          process.env.NODE_ENV === 'production'
-            ? {
-                rejectUnauthorized: false,
-              }
-            : undefined,
-        // Optimized connection handling
-        retryAttempts: 3,
-        retryDelay: 3000,
-        connectTimeout: 20000,
-        extra: {
-          connectionLimit: 10,
-          waitForConnections: true,
-          queueLimit: 0,
-        },
-        // Proper connection pool configuration for MySQL2
-        poolSize: undefined, // Remove deprecated option
-        pool: {
-          max: 10,
-          min: 2,
-          idle: 10000,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        // Log để debug
+        console.log('Database Config:', {
+          host: configService.get('DB_HOST'),
+          port: configService.get('DB_PORT'),
+          database: configService.get('DB_DATABASE_NAME'),
+        });
+
+        return {
+          type: 'mysql',
+          // Không dùng URL string mà dùng các tham số riêng
+          host: configService.get('DB_HOST'),
+          port: +configService.get('DB_PORT'),
+          username: configService.get('DB_USERNAME'),
+          password: configService.get('DB_PASSWORD'),
+          database: configService.get('DB_DATABASE_NAME'),
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: false,
+          logging: true,
+          ssl: {
+            rejectUnauthorized: false, // Cần thiết cho Railway
+          },
+          extra: {
+            connectionLimit: 5,
+            waitForConnections: true,
+            queueLimit: 0,
+          },
+          // Cấu hình retry tối ưu hơn
+          retryAttempts: 5,
+          retryDelay: 5000,
+          connectTimeout: 60000,
+          // Cấu hình pool đơn giản hơn
+          pool: {
+            max: 5,
+            min: 1,
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     UsersModule,
