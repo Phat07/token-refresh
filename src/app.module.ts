@@ -57,6 +57,9 @@ import { Admin } from './admin/entities/admin.entity';
         ],
         synchronize: false,
         logging: true,
+        ssl: {
+          rejectUnauthorized: false, // Quan trọng cho kết nối SSL trên Railway
+        },
       }),
       inject: [ConfigService],
     }),
