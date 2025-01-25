@@ -55,7 +55,7 @@ import { TransactionModule } from './transaction/transaction.module';
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_DATABASE_NAME'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false,
+          synchronize: true,
           logging: true,
           ssl: {
             rejectUnauthorized: false, // Cần thiết cho Railway

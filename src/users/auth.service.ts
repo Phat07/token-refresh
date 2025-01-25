@@ -169,14 +169,56 @@ export class AuthService {
     };
   }
 
+  // async login(requestBody: LoginUserDto) {
+  //   const userByEmail = await this.userService.findByEmail(requestBody.email);
+
+  //   if (!userByEmail) {
+  //     throw new BadRequestException('Gmail không chính xác!');
+  //   }
+
+  //   // check password
+
+  //   const isMatchPassword = await bcrypt.compare(
+  //     requestBody.password,
+  //     userByEmail.password,
+  //   );
+
+  //   if (!isMatchPassword) {
+  //     throw new BadRequestException('Mật khẩu không chính xác!');
+  //   }
+
+  //   // generate jwt token
+  //   const payload = UserHelper.generateUserPayload(userByEmail);
+  //   console.log('pay', payload);
+
+  //   const accessToken = await this.jwtService.signAsync(payload, {
+  //     secret: process.env.JWT_SECRET,
+  //   });
+  //   const refreshToken = await this.jwtService.signAsync(payload, {
+  //     secret: process.env.JWT_REFRESH_SECRET,
+  //     expiresIn: '30d', // Set the refresh token expiration to 30 days
+  //   });
+  //   const tokenEntry = new Token();
+  //   tokenEntry.user = userByEmail;
+  //   tokenEntry.accessToken = accessToken;
+  //   tokenEntry.refreshToken = refreshToken;
+  //   tokenEntry.accessTokenExpiresAt = add(new Date(), { hours: 1 });
+  //   tokenEntry.refreshTokenExpiresAt = add(new Date(), { days: 30 });
+
+  //   await this.tokenRepo.save(tokenEntry);
+  //   return {
+  //     msg: 'User has been login successfully!',
+  //     accessToken,
+  //     refreshToken,
+  //     data: userByEmail,
+  //   };
+  // }
   async login(requestBody: LoginUserDto) {
     const userByEmail = await this.userService.findByEmail(requestBody.email);
 
     if (!userByEmail) {
       throw new BadRequestException('Gmail không chính xác!');
     }
-
-    // check password
 
     const isMatchPassword = await bcrypt.compare(
       requestBody.password,
@@ -187,25 +229,35 @@ export class AuthService {
       throw new BadRequestException('Mật khẩu không chính xác!');
     }
 
-    // generate jwt token
     const payload = UserHelper.generateUserPayload(userByEmail);
-    console.log('pay', payload);
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
     });
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '30d', // Set the refresh token expiration to 30 days
+      expiresIn: '30d',
     });
-    const tokenEntry = new Token();
-    tokenEntry.user = userByEmail;
-    tokenEntry.accessToken = accessToken;
-    tokenEntry.refreshToken = refreshToken;
-    tokenEntry.accessTokenExpiresAt = add(new Date(), { hours: 1 });
-    tokenEntry.refreshTokenExpiresAt = add(new Date(), { days: 30 });
 
-    await this.tokenRepo.save(tokenEntry);
+    await this.tokenRepo
+      .createQueryBuilder()
+      .insert()
+      .into(Token)
+      .values({
+        user: userByEmail,
+        accessToken,
+        refreshToken,
+        accessTokenExpiresAt: add(new Date(), { hours: 1 }),
+        refreshTokenExpiresAt: add(new Date(), { days: 30 }),
+      })
+      .orUpdate([
+        'accessToken',
+        'refreshToken',
+        'accessTokenExpiresAt',
+        'refreshTokenExpiresAt',
+      ])
+      .execute();
+
     return {
       msg: 'User has been login successfully!',
       accessToken,
@@ -213,6 +265,7 @@ export class AuthService {
       data: userByEmail,
     };
   }
+
   async refreshToken(refreshToken: string) {
     // Tìm refresh token trong database
     const tokenEntry = await this.tokenRepo.findOne({

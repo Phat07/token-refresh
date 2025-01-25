@@ -8,10 +8,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  Unique,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 @Entity('tokens')
+@Unique(["userId"])
 export class Token {
   @PrimaryGeneratedColumn('uuid')
   id: string;

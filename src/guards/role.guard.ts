@@ -21,13 +21,15 @@ export class RoleGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    console.log('Required Roles: ', requiredRoles);
     if (!requiredRoles) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const currentUser = request.currentUser;
-
+    console.log("curr", currentUser);
+    
     if (!currentUser || !currentUser.roleId) {
       return false;
     }    
@@ -37,6 +39,7 @@ export class RoleGuard implements CanActivate {
     if (!userRole) {
       return false;
     }
+    console.log('User Role: ', userRole);
 
     // Check if the user's role is in the allowed roles
     return requiredRoles

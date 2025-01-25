@@ -39,6 +39,9 @@ export class User {
   @Column({ unique: false, nullable: true, default: null })
   googleId: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  roleId: string;
+
   @ManyToOne(() => Role, (role) => role.users)
   @JoinColumn({ name: 'roleId' })
   role: Role;
