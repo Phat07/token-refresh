@@ -36,6 +36,8 @@ import { Admin } from './admin/entities/admin.entity';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         // Log để debug
+        console.log("demo");
+        
         console.log('Database Config:', {
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
