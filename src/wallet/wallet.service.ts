@@ -1,4 +1,9 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -15,7 +20,7 @@ export class WalletService {
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
     @InjectRepository(Transaction)
-    private transactionRepository: Repository<Transaction>,    
+    private transactionRepository: Repository<Transaction>,
     @Inject(forwardRef(() => PayosService))
     private readonly payosService: PayosService,
   ) {}
@@ -39,7 +44,7 @@ export class WalletService {
         wallet: user.wallet,
         amount: body.amount,
         type: 'pending',
-        orderCode
+        orderCode,
       });
       await this.transactionRepository.save(transaction);
       //   const wallet = this.walletRepository.create({
@@ -50,10 +55,10 @@ export class WalletService {
 
       //   // Lưu vào cơ sở dữ liệu
       //   await this.walletRepository.save(wallet);
-    //   const updatedWallet = await this.updateWalletBalance(
-    //     body.userId,
-    //     body.amount,
-    //   );
+      //   const updatedWallet = await this.updateWalletBalance(
+      //     body.userId,
+      //     body.amount,
+      //   );
       return {
         error: 0,
         message: 'Success',
@@ -66,7 +71,7 @@ export class WalletService {
           description: paymentLinkRes.description,
           orderCode: paymentLinkRes.orderCode,
           qrCode: paymentLinkRes.qrCode,
-        //   walletBalance: updatedWallet.balance,
+          //   walletBalance: updatedWallet.balance,
         },
       };
     } catch (error) {
@@ -77,19 +82,25 @@ export class WalletService {
       };
     }
   }
-  async updateWalletBalance(userId: string, amount: number) {
+  async updateWalletBalance(walletId: string, amount: number) {
+    console.log('Updating wallet:', { walletId, amount });
+  
     const wallet = await this.walletRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
+      where: { id: walletId },
     });
-
+  
     if (!wallet) {
+      console.error('Wallet not found:', walletId);
       throw new Error('Wallet not found');
     }
-
-    wallet.balance += amount;
-    await this.walletRepository.save(wallet);
-
-    return wallet;
+  
+    console.log('Current wallet balance:', wallet.balance);
+    wallet.balance = Number(wallet.balance) + Number(amount);
+    console.log('Updated wallet balance:', wallet.balance);
+  
+    const updatedWallet = await this.walletRepository.save(wallet);
+    console.log('Saved wallet:', updatedWallet);
+  
+    return updatedWallet;
   }
 }

@@ -82,6 +82,7 @@ export class PayosService {
           where: { orderCode },
           relations: ['wallet'],
         });
+        console.log('Wallet ID:', transaction.wallet?.id);
 
         if (!transaction) {
           return { error: 1, message: 'Transaction not found' };
@@ -96,9 +97,9 @@ export class PayosService {
           return { error: 1, message: 'Wallet not found' };
         }
 
-        wallet.balance += amount;
-        await this.walletRepository.save(wallet);
-
+        // wallet.balance += amount;
+        // await this.walletRepository.save(wallet);
+        this.walletService.updateWalletBalance(transaction.wallet.id, amount);
         // Update transaction status
         transaction.type = 'success';
         await this.transactionRepository.save(transaction);
