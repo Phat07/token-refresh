@@ -10,10 +10,11 @@ import { UsersService } from 'src/users/services/users/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { Role } from 'src/roles/entities/role.entity';
 import { ConfigService } from '@nestjs/config';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Wallet, User, Role]), // Đăng ký Wallet entity
+    TypeOrmModule.forFeature([Wallet, User, Role, Transaction]), // Đăng ký Wallet entity
     forwardRef(() => UsersModule), // Import UsersModule để sử dụng UserRepository
   ],
   controllers: [WalletController],
