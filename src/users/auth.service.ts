@@ -214,7 +214,7 @@ export class AuthService {
     };
   }
   async refreshToken(refreshToken: string) {
-    // Kiểm tra xem refresh token có hợp lệ không
+    // Tìm refresh token trong database
     const tokenEntry = await this.tokenRepo.findOne({
       where: { refreshToken },
     });
@@ -223,30 +223,49 @@ export class AuthService {
       throw new BadRequestException('Refresh token không hợp lệ!');
     }
 
-    // Kiểm tra xem refresh token có hết hạn không
+    // Kiểm tra refresh token có hết hạn không
     const currentTime = new Date();
     if (tokenEntry.refreshTokenExpiresAt < currentTime) {
       throw new BadRequestException('Refresh token đã hết hạn!');
     }
 
-    // Lấy thông tin người dùng dựa trên userId từ tokenEntry
+    // Lấy thông tin người dùng
     const user = await this.userService.findUserWithRole(tokenEntry.userId);
     if (!user) {
       throw new BadRequestException('Người dùng không tìm thấy!');
     }
 
-    // Tạo payload cho access token
-    const payload = UserHelper.generateUserPayload(user);
+    // Kiểm tra access token có thực sự cần refresh không (optional)
+    const decoded = this.jwtService.decode(refreshToken) as any;
+    if (decoded && decoded.exp * 1000 > Date.now() + 5 * 60 * 1000) {
+      throw new BadRequestException(
+        'Access token vẫn còn hạn, không cần refresh!',
+      );
+    }
 
     // Tạo access token mới
-    const accessToken = await this.jwtService.signAsync(payload, {
+    const payload = UserHelper.generateUserPayload(user);
+    const newAccessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '1h',
     });
 
-    return {
-      accessToken,
-      refreshToken: tokenEntry.refreshToken, // Trả về refresh token cũ
-    };
+    // Tạo refresh token mới
+    const newRefreshToken = await this.jwtService.signAsync(
+      { userId: user.id },
+      {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '7d',
+      },
+    );
+
+    // Cập nhật refresh token trong DB
+    tokenEntry.refreshToken = newRefreshToken;
+    tokenEntry.refreshTokenExpiresAt = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    ); // 7 ngày
+    await this.tokenRepo.save(tokenEntry);
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 }
