@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UsersController } from './controllers/users/users.controller';
 import { UsersService } from './services/users/users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -36,6 +36,8 @@ import { Owner } from 'src/owner/entities/owner.entity';
       Employee,
       Owner,
     ]),
+    forwardRef(() => WalletModule),
+    forwardRef(() => AdminModule),
     JwtModule.register({
       global: true,
       signOptions: { expiresIn: '1h' },
