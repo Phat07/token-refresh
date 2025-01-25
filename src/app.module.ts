@@ -44,7 +44,7 @@ import { Admin } from './admin/entities/admin.entity';
 
         return {
           type: 'mysql',
-          // driver: require('mysql2'),
+          driver: require('mysql2'),
           // Không dùng URL string mà dùng các tham số riêng
           host: configService.get('DB_HOST'),
           port: +configService.get('DB_PORT'),
