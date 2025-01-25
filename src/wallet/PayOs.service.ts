@@ -36,14 +36,22 @@ export class PayosService {
   // Xử lý webhook từ PayOS
   async handleWebhook(webhookData: any) {
     try {
-      console.log('Webhook data received:', webhookData);
+      // Xác thực webhook từ PayOS
+      const isValid = this.payos.verifyWebhook(webhookData);
 
-      // Kiểm tra trạng thái thanh toán từ webhook
+      if (!isValid) {
+        console.warn('Invalid webhook received');
+        return {
+          error: 1,
+          message: 'Invalid webhook',
+        };
+      }
+      console.log("webhook", webhookData);
+      
+
+      // Các logic xử lý webhook như cũ
       if (webhookData.status === 'success') {
-        // Giả sử webhook trả về `userId` và `amount`
         const { userId, amount } = webhookData;
-
-        // Cập nhật số dư ví của người dùng
         await this.walletService.updateWalletBalance(userId, amount);
 
         return {
@@ -57,7 +65,7 @@ export class PayosService {
         };
       }
     } catch (error) {
-      console.error('Error handling webhook:', error);
+      console.error('Webhook handling error:', error);
       return {
         error: 1,
         message: 'Internal server error',
