@@ -26,6 +26,7 @@ import { Wallet } from './wallet/entities/wallet.entity';
 import { Customer } from './customer/entities/customer.entity';
 import { Owner } from './owner/entities/owner.entity';
 import { Admin } from './admin/entities/admin.entity';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { Admin } from './admin/entities/admin.entity';
     OwnerModule,
     AdminModule,
     WalletModule,
+    TransactionModule,
   ],
 })
 export class AppModule {}

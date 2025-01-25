@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import PayOS = require('@payos/node');
 import { WalletService } from './wallet.service'; // Giả sử bạn có WalletService để cập nhật ví
 import * as crypto from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { Repository } from 'typeorm';
+import { Wallet } from './entities/wallet.entity';
 @Injectable()
 export class PayosService {
   private payos: any;
@@ -11,6 +15,10 @@ export class PayosService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
+    @InjectRepository(Transaction)
+    private transactionRepository: Repository<Transaction>,
+    @InjectRepository(Wallet)
+    private walletRepository: Repository<Wallet>,
   ) {
     this.payos = new PayOS(
       this.configService.get<string>('PAYOS_CLIENT_ID'),
@@ -67,11 +75,31 @@ export class PayosService {
 
       // Xử lý dữ liệu webhook
       if (webhookData.status === 'success') {
-        const { userId, amount } = webhookData;
-        console.log(`Updating wallet for user ${userId} with amount ${amount}`);
-        await this.walletService.updateWalletBalance(userId, amount);
+        const { orderCode, amount } = webhookData;
 
-        return { error: 0, message: 'Payment successful, wallet updated' };
+        // Find transaction by orderCode
+        const transaction = await this.transactionRepository.findOne({
+          where: { orderCode },
+          relations: ['wallet', 'wallet.user'],
+        });
+
+        if (!transaction) {
+          return { error: 1, message: 'Transaction not found' };
+        }
+
+        // Update wallet
+        const wallet = transaction.wallet;
+        wallet.balance += amount;
+        await this.walletRepository.save(wallet);
+
+        // Update transaction status
+        transaction.type = 'success';
+        await this.transactionRepository.save(transaction);
+
+        return {
+          error: 0,
+          message: 'Payment successful, wallet updated',
+        };
       } else {
         return { error: 1, message: 'Payment failed or invalid data' };
       }

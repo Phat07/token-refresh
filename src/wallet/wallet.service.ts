@@ -6,6 +6,7 @@ import { Wallet } from './entities/wallet.entity';
 import PayOS from '@payos/node';
 import { CreateWalletDto } from './dto/createWallet';
 import { PayosService } from './PayOs.service';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 @Injectable()
 export class WalletService {
   constructor(
@@ -13,6 +14,8 @@ export class WalletService {
     private userRepository: Repository<User>,
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
+    @InjectRepository(Transaction)
+    private transactionRepository: Repository<Transaction>,    
     @Inject(forwardRef(() => PayosService))
     private readonly payosService: PayosService,
   ) {}
@@ -24,13 +27,21 @@ export class WalletService {
       if (!user) {
         throw new BadRequestException('Không tìm thấy khách hàng!');
       }
+      const orderCode = Number(String(new Date().getTime()).slice(-6));
       const paymentLinkRes = await this.payosService.createPaymentLink({
-        orderCode: Number(String(new Date().getTime()).slice(-6)),
+        orderCode,
         amount: body.amount,
         description: body.description,
         cancelUrl: body.cancelUrl,
         returnUrl: body.returnUrl,
       });
+      const transaction = this.transactionRepository.create({
+        wallet: user.wallet,
+        amount: body.amount,
+        type: 'pending',
+        orderCode
+      });
+      await this.transactionRepository.save(transaction);
       //   const wallet = this.walletRepository.create({
       //     user, // Gán đối tượng user trực tiếp
       //     description: body.description,
