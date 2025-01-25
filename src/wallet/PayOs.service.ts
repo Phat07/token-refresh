@@ -1,8 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Body, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import PayOS = require('@payos/node');
 import { WalletService } from './wallet.service'; // Giả sử bạn có WalletService để cập nhật ví
-
+import * as crypto from 'crypto';
 @Injectable()
 export class PayosService {
   private payos: any;
@@ -34,42 +34,50 @@ export class PayosService {
   }
 
   // Xử lý webhook từ PayOS
-  async handleWebhook(webhookData: any) {
+  async handleWebhook(@Body() webhookData: any) {
     try {
-      // Xác thực webhook từ PayOS
-      const isValid = this.payos.verifyWebhook(webhookData);
+      console.log('Received Webhook:', webhookData);
 
-      if (!isValid) {
-        console.warn('Invalid webhook received');
-        return {
-          error: 1,
-          message: 'Invalid webhook',
-        };
+      // Lấy checksum gửi từ PayOS
+      const receivedChecksum = webhookData.checksum;
+
+      // Xóa checksum khỏi dữ liệu để tính lại
+      delete webhookData.checksum;
+
+      // Chuyển dữ liệu thành chuỗi JSON chuẩn
+      const dataString = JSON.stringify(webhookData);
+
+      // Tạo checksum mới từ data và CHECKSUM_KEY
+      const computedChecksum = crypto
+        .createHmac(
+          'sha256',
+          this.configService.get<string>('PAYOS_CHECKSUM_KEY'),
+        )
+        .update(dataString)
+        .digest('hex');
+
+      console.log('Received Checksum:', receivedChecksum);
+      console.log('Computed Checksum:', computedChecksum);
+
+      // Kiểm tra xem checksum có khớp không
+      if (receivedChecksum !== computedChecksum) {
+        console.log('Invalid webhook signature');
+        return { error: 1, message: 'Invalid webhook signature' };
       }
-      console.log("webhook", webhookData);
-      
 
-      // Các logic xử lý webhook như cũ
+      // Xử lý dữ liệu webhook
       if (webhookData.status === 'success') {
         const { userId, amount } = webhookData;
+        console.log(`Updating wallet for user ${userId} with amount ${amount}`);
         await this.walletService.updateWalletBalance(userId, amount);
 
-        return {
-          error: 0,
-          message: 'Payment successful, wallet updated',
-        };
+        return { error: 0, message: 'Payment successful, wallet updated' };
       } else {
-        return {
-          error: 1,
-          message: 'Payment failed or invalid data',
-        };
+        return { error: 1, message: 'Payment failed or invalid data' };
       }
     } catch (error) {
       console.error('Webhook handling error:', error);
-      return {
-        error: 1,
-        message: 'Internal server error',
-      };
+      return { error: 1, message: 'Internal server error' };
     }
   }
 }
