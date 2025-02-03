@@ -13,6 +13,7 @@ import { EmployeeModule } from 'src/employee/employee.module';
     CloudinaryModule // Import Cloudinary module
   ],
   controllers: [SalonController],
-  providers: [SalonService]
+  providers: [SalonService],
+  exports: [SalonService],
 })
 export class SalonModule {}

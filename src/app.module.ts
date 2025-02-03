@@ -1,32 +1,20 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
-import { RolesModule } from './roles/roles.module';
-import { User } from './users/entities/user.entity';
-import { Role } from './roles/entities/role.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TokenModule } from './token/token.module';
-import { Token } from './token/entities/token.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './admin/admin.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { CustomerModule } from './customer/customer.module';
+import { EmployeeModule } from './employee/employee.module';
 import { OtpModule } from './otp/otp.module';
-import { Otp } from './otp/entities/otp.entity';
+import { OwnerModule } from './owner/owner.module';
+import { RolesModule } from './roles/roles.module';
 import { SalonModule } from './salon/salon.module';
 import { ServiceModule } from './service/service.module';
-import { VoucherModule } from './voucher/voucher.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { Salon } from './salon/entities/salon.entity';
-import { Service } from './service/entities/service.entity';
-import { Voucher } from './voucher/entities/voucher.entity';
-import { EmployeeModule } from './employee/employee.module';
-import { CustomerModule } from './customer/customer.module';
-import { OwnerModule } from './owner/owner.module';
-import { AdminModule } from './admin/admin.module';
-import { WalletModule } from './wallet/wallet.module';
-import { Employee } from './employee/entities/employee.entity';
-import { Wallet } from './wallet/entities/wallet.entity';
-import { Customer } from './customer/entities/customer.entity';
-import { Owner } from './owner/entities/owner.entity';
-import { Admin } from './admin/entities/admin.entity';
+import { TokenModule } from './token/token.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { UsersModule } from './users/users.module';
+import { VoucherModule } from './voucher/voucher.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [

@@ -18,7 +18,7 @@ import { Transaction } from 'src/transaction/entities/transaction.entity';
     forwardRef(() => UsersModule), // Import UsersModule để sử dụng UserRepository
   ],
   controllers: [WalletController],
-  providers: [WalletService, PayosService, UsersService],
+  providers: [WalletService, PayosService],
   exports: [WalletService, PayosService, TypeOrmModule],
 })
 export class WalletModule {}
