@@ -33,7 +33,10 @@ export class PayosService {
       console.log('Creating payment link with body:', body);
       const response = await this.payos.createPaymentLink(body);
       console.log('Payment link response:', response);
-
+      console.log('PAYOS_CLIENT_ID:', this.configService.get<string>('PAYOS_CLIENT_ID'));
+      console.log('PAYOS_API_KEY:', this.configService.get<string>('PAYOS_API_KEY'));
+      console.log('PAYOS_CHECKSUM_KEY:', this.configService.get<string>('PAYOS_CHECKSUM_KEY'));
+      
       return response;
     } catch (error) {
       console.error('Error creating payment link:', error);
