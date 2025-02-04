@@ -5,12 +5,15 @@ import { Repository } from 'typeorm';
 import { Salon } from './entities/salon.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreateSalonDto } from './dto/createSalon.dto';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
 
 @Injectable()
 export class SalonService {
   constructor(
     @InjectRepository(Salon)
     private salonRepository: Repository<Salon>,
+    @InjectRepository(Schedule)
+    private scheduleRepository: Repository<Schedule>,
     private cloudinaryService: CloudinaryService,
   ) {}
 
@@ -20,7 +23,7 @@ export class SalonService {
   }
 
   async createSalonApi(body: any, file?: Express.Multer.File): Promise<Salon> {
-    // Validate and parse openingHours
+    // Validate và parse openingHours
     let openingHours: Record<string, string> = {};
     try {
       openingHours =
@@ -29,26 +32,19 @@ export class SalonService {
           : body.openingHours || {};
     } catch (error) {
       console.error('Invalid openingHours JSON:', error);
-      throw new Error('Invalid openingHours format. It must be a valid JSON string or object.');
+      throw new Error(
+        'Invalid openingHours format. It must be a valid JSON string or object.',
+      );
     }
-  
-    // Validate latitude and longitude
+
+    // Validate latitude và longitude
     const lat = parseFloat(body.lat);
     const lng = parseFloat(body.lng);
     if (isNaN(lat) || isNaN(lng)) {
       throw new Error('Latitude and longitude must be valid numbers.');
     }
-  
-    // Create the DTO
-    const createSalonDto: CreateSalonDto = {
-      name: body.name,
-      address: body.address,
-      lat,
-      lng,
-      openingHours, // Directly use the parsed object
-    };
-  
-    // Handle image upload (optional)
+
+    // Xử lý upload hình ảnh lên Cloudinary (nếu có)
     let imageUrl: string | undefined;
     if (file) {
       try {
@@ -59,13 +55,49 @@ export class SalonService {
         throw new Error('Failed to upload image. Please try again.');
       }
     }
-    // Create and save the salon entity
+
+    // Tạo Salon DTO
+    const createSalonDto: CreateSalonDto = {
+      name: body.name,
+      address: body.address,
+      lat,
+      lng,
+      openingHours, // Lưu giữ giờ mở cửa
+      image: imageUrl,
+    };
+
+    // Tạo Salon
+    let salon: Salon;
     try {
-      return this.create({ ...createSalonDto, image: imageUrl });
+      salon = await this.salonRepository.save(
+        this.salonRepository.create(createSalonDto),
+      );
     } catch (error) {
       console.error('Failed to create salon:', error);
       throw new Error('Error occurred while creating the salon.');
     }
+
+    // Tạo lịch làm việc (Schedule) cho mỗi ngày có trong openingHours
+    const daysOfWeek = Object.keys(openingHours);
+    const schedules = daysOfWeek.map((day) => {
+      const [startTime, endTime] = openingHours[day].split('-');
+
+      return this.scheduleRepository.create({
+        salon: salon, // Gán salon vào schedule
+        dayOfWeek: day.charAt(0).toUpperCase() + day.slice(1), // Chuyển chữ thường thành chữ hoa đầu
+        startTime,
+        endTime,
+        isActive: true, // Lịch làm việc mặc định là đang hoạt động
+      });
+    });
+
+    try {
+      await this.scheduleRepository.save(schedules);
+    } catch (error) {
+      console.error('Failed to create schedules:', error);
+      throw new Error('Error occurred while creating schedules.');
+    }
+
+    return salon;
   }
-  
 }

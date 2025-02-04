@@ -1,5 +1,6 @@
 import { Employee } from 'src/employee/entities/employee.entity';
 import { Owner } from 'src/owner/entities/owner.entity';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
 import { Service } from 'src/service/entities/service.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
@@ -33,16 +34,15 @@ export class Salon {
   @Column({ nullable: true })
   image: string; // Cloudinary URL
 
-  @Column('simple-json')
-  openingHours: {
-    monday?: string;
-    tuesday?: string;
-    wednesday?: string;
-    thursday?: string;
-    friday?: string;
-    saturday?: string;
-    sunday?: string;
-  };
+  @OneToMany(() => Schedule, (schedule) => schedule.salon)
+  schedules: Schedule[];
+
+  @Column({
+    type: 'enum',
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+  })
+  status: 'pending' | 'approved' | 'rejected';
 
   // Quan hệ với Service
   @OneToMany(() => Service, (service) => service.salon)
@@ -52,10 +52,10 @@ export class Salon {
   @OneToMany(() => Voucher, (voucher) => voucher.salon)
   vouchers: Voucher[];
 
-  @OneToMany(() => Employee, employee => employee.salon)
+  @OneToMany(() => Employee, (employee) => employee.salon)
   employees: Employee[];
 
-  @ManyToOne(() => Owner, owner => owner.salons)
+  @ManyToOne(() => Owner, (owner) => owner.salons)
   owner: Employee[];
   // @ManyToOne(() => User, (user) => user.salons)
   // @JoinColumn({ name: 'userId' })

@@ -15,6 +15,9 @@ import { TransactionModule } from './transaction/transaction.module';
 import { UsersModule } from './users/users.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { WalletModule } from './wallet/wallet.module';
+import { ChatboxModule } from './chatbox/chatbox.module';
+import { ScheduleModule } from './schedule/schedule.module';
+import { EmployeeScheduleModule } from './employee-schedule/employee-schedule.module';
 
 @Module({
   imports: [
@@ -25,8 +28,8 @@ import { WalletModule } from './wallet/wallet.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         // Log để debug
-        console.log("demo");
-        
+        console.log('demo');
+
         console.log('Database Config:', {
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
@@ -80,6 +83,9 @@ import { WalletModule } from './wallet/wallet.module';
     AdminModule,
     WalletModule,
     TransactionModule,
+    ChatboxModule,
+    ScheduleModule,
+    EmployeeScheduleModule,
   ],
 })
 export class AppModule {}

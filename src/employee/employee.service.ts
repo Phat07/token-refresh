@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/roles/enums/role.enum';
 import { CreateEmployeeGmailDto } from './dto/createEmployeeGmail';
 import { Role } from 'src/roles/entities/role.entity';
+import { EmployeeSchedule } from 'src/employee-schedule/entities/employeeSchedule.entity';
 
 @Injectable()
 export class EmployeeService {
@@ -27,6 +28,8 @@ export class EmployeeService {
     private userService: UsersService,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Role) private roleRepository: Repository<Role>,
+    @InjectRepository(EmployeeSchedule)
+    private employeeScheduleRepository: Repository<EmployeeSchedule>,
   ) {}
 
   async register(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
@@ -50,30 +53,52 @@ export class EmployeeService {
       }
     }
 
-    // Transform the workSchedule into the expected type if necessary
-    const transformedSchedule = workSchedule
-      ? {
-          monday: workSchedule.monday || null,
-          tuesday: workSchedule.tuesday || null,
-          wednesday: workSchedule.wednesday || null,
-          thursday: workSchedule.thursday || null,
-          friday: workSchedule.friday || null,
-          saturday: workSchedule.saturday || null,
-          sunday: workSchedule.sunday || null,
-        }
-      : null;
-
-    // Create a new employee
+    // Create the Employee entity
     const newEmployee = this.employeeRepository.create({
-      image: null,
       username,
       gender,
       salon,
       services,
-      workSchedule: transformedSchedule, // Pass the properly structured workSchedule
+      image: null,
     });
 
-    return this.employeeRepository.save(newEmployee);
+    // Save the Employee entity
+    const savedEmployee = await this.employeeRepository.save(newEmployee);
+
+    // Create and save the EmployeeSchedule entities based on workSchedule
+    if (workSchedule) {
+      const schedules: EmployeeSchedule[] = [];
+      const daysOfWeek = [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ];
+
+      for (const day of daysOfWeek) {
+        if (workSchedule[day]) {
+          const [startTime, endTime] = workSchedule[day].split('-'); // Split the hours string
+
+          const schedule = this.employeeScheduleRepository.create({
+            dayOfWeek: day.charAt(0).toUpperCase() + day.slice(1), // Capitalize the first letter
+            startTime,
+            endTime,
+            salonId,
+            employeeId: savedEmployee.id,
+          });
+
+          schedules.push(schedule);
+        }
+      }
+
+      // Save all the schedules
+      await this.employeeScheduleRepository.save(schedules);
+    }
+
+    return savedEmployee;
   }
 
   async updateEmployee(
@@ -121,12 +146,12 @@ export class EmployeeService {
       employee.gender = updateData.gender;
     }
 
-    if (updateData.workSchedule) {
-      employee.workSchedule = {
-        ...employee.workSchedule, // Retain existing schedule if not overwritten
-        ...updateData.workSchedule,
-      };
-    }
+    // if (updateData.workSchedule) {
+    //   employee.workSchedule = {
+    //     ...employee.workSchedule, // Retain existing schedule if not overwritten
+    //     ...updateData.workSchedule,
+    //   };
+    // }
 
     if (updateData.salonId) {
       const salon = await this.salonRepository.findOne({

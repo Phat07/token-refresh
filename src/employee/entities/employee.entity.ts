@@ -10,10 +10,13 @@ import {
   JoinTable,
   BeforeInsert,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { EnumGender } from '../enums/gender.enum';
 import { User } from 'src/users/entities/user.entity';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { EmployeeSchedule } from 'src/employee-schedule/entities/employeeSchedule.entity';
 
 @Entity()
 export class Employee {
@@ -23,28 +26,23 @@ export class Employee {
   @Column()
   username: string;
 
- @Column({
+  @Column({
     type: 'enum',
     enum: EnumGender,
-    default: EnumGender.OTHER
+    default: EnumGender.OTHER,
   })
   gender: EnumGender;
 
   @Column({ nullable: true })
   image: string; // Employee image (could be a URL from Cloudinary)
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
   // Work schedule from Monday to Sunday (you can adjust this based on your needs)
-  @Column({ type: 'json', nullable: true })
-  workSchedule: {
-    monday?: string;
-    tuesday?: string;
-    wednesday?: string;
-    thursday?: string;
-    friday?: string;
-    saturday?: string;
-    sunday?: string;
-  };
-  
+
+  @OneToMany(() => EmployeeSchedule, (employeeSchedule) => employeeSchedule.employee)
+  employeeSchedules: EmployeeSchedule[];
+
   // Relation to Salon
   @ManyToOne(() => Salon, (salon) => salon.employees)
   @JoinColumn({ name: 'salonId' })
@@ -65,7 +63,6 @@ export class Employee {
     inverseJoinColumn: { name: 'serviceId', referencedColumnName: 'id' },
   })
   services: Service[];
-
 
   @BeforeInsert()
   generateId() {

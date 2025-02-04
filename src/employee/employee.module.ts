@@ -12,13 +12,16 @@ import { UsersModule } from 'src/users/users.module';
 import { EmployeeController } from './employee.controller';
 import { EmployeeService } from './employee.service';
 import { Employee } from './entities/employee.entity';
+import { EmployeeSchedule } from 'src/employee-schedule/entities/employeeSchedule.entity';
+import { EmployeeScheduleModule } from 'src/employee-schedule/employee-schedule.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Employee, Salon, Service, User, Role]),
+    TypeOrmModule.forFeature([Employee, Salon, Service, User, Role, EmployeeSchedule]),
     forwardRef(() => SalonModule), // Đảm bảo module này được import
     CloudinaryModule,
     RolesModule,
+    EmployeeScheduleModule,
     forwardRef(() => UsersModule),
     ServiceModule     
   ],

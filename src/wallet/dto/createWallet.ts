@@ -16,21 +16,21 @@ export class CreateWalletDto {
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({
-    description: 'url success',
-    example: '....',
-  })
-  @IsString()
-  @IsNotEmpty()
-  returnUrl: string;
+  // @ApiProperty({
+  //   description: 'url success',
+  //   example: '....',
+  // })
+  // @IsString()
+  // @IsNotEmpty()
+  // returnUrl: string;
 
-  @ApiProperty({
-    description: 'url cancel',
-    example: '....',
-  })
-  @IsString()
-  @IsNotEmpty()
-  cancelUrl: string;
+  // @ApiProperty({
+  //   description: 'url cancel',
+  //   example: '....',
+  // })
+  // @IsString()
+  // @IsNotEmpty()
+  // cancelUrl: string;
 
   @ApiProperty({
     description: 'Số tiền cần nạp',
