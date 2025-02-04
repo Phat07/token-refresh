@@ -31,6 +31,7 @@ export class PayosService {
   async createPaymentLink(body: any) {
     try {
       console.log('Creating payment link with body:', body);
+      console.log('ENV VARIABLES:', process.env.PAYOS_API_KEY);
       console.log(
         'PAYOS_CLIENT_ID:',
         this.configService.get<string>('PAYOS_CLIENT_ID'),
