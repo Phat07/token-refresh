@@ -32,13 +32,14 @@ export class WalletService {
       if (!user) {
         throw new BadRequestException('Không tìm thấy khách hàng!');
       }
+      const baseUrl = 'https://your-railway-app.up.railway.app';
       const orderCode = Number(String(new Date().getTime()).slice(-6));
       const paymentLinkRes = await this.payosService.createPaymentLink({
         orderCode,
         amount: body.amount,
         description: body.description,
-        cancelUrl: body.cancelUrl,
-        returnUrl: body.returnUrl,
+        cancelUrl: `${baseUrl}/api/docs`,
+        returnUrl: `${baseUrl}/api/docs`,
       });
       const transaction = this.transactionRepository.create({
         wallet: user.wallet,
