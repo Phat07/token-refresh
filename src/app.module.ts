@@ -18,6 +18,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { ChatboxModule } from './chatbox/chatbox.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { EmployeeScheduleModule } from './employee-schedule/employee-schedule.module';
+import { SocketIoModule } from './socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { EmployeeScheduleModule } from './employee-schedule/employee-schedule.mo
     ChatboxModule,
     ScheduleModule,
     EmployeeScheduleModule,
+    SocketIoModule,
   ],
 })
 export class AppModule {}
